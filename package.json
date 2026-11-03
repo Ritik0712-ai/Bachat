@@ -14,7 +14,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:demo": "tsx scripts/seed-demo.ts",
-    "maintenance": "tsx scripts/maintenance.ts"
+    "maintenance": "tsx scripts/maintenance.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "restore:scrub": "tsx scripts/restore-scrub.ts",
+    "format": "prettier --write client/src server shared scripts tests"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
@@ -37,6 +40,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.4",
     "@types/cookie-parser": "^1.4.10",
@@ -48,6 +52,7 @@
     "@vitejs/plugin-react": "^6.2.1",
     "concurrently": "^10.0.6",
     "mongodb-memory-server": "^11.3.0",
+    "prettier": "^3.9.10",
     "supertest": "^7.3.1",
     "tailwindcss": "^4.3.4",
     "tsx": "^4.23.15",

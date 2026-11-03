@@ -1,12 +1,448 @@
-import {useEffect} from 'react';
-import {Link,Navigate} from 'react-router-dom';
-import {useQuery} from '@tanstack/react-query';
-import {ArrowRight,ArrowUpRight,ArrowDownLeft,ShieldCheck,ChartNoAxesColumn,Target,Wallet,Check,Leaf,Plus,Utensils,ShoppingBasket,Car,LockKeyhole} from 'lucide-react';
-import {Brand,PageHeading} from './components';
-import {useAuth} from './context';
-import {api} from './api';
-export function PublicHeader(){return <header className="public-header"><Brand/><nav aria-label="Main navigation"><Link to="/#how-it-works">How it works</Link><Link to="/help">Help</Link><Link className="public-signin" to="/login">Sign in</Link><Link className="button primary small" to="/signup">Start your ledger<ArrowRight size={15}/></Link></nav></header>;}
-export function PublicFooter(){return <footer className="public-footer"><Brand small/><span>A little bachat goes a long way.</span><nav><Link to="/help">Help</Link><Link to="/privacy">Privacy</Link><Link to="/login">Sign in</Link></nav></footer>;}
-export function Landing(){const auth=useAuth();useEffect(()=>{document.title='Bachat · Your money, in perspective';},[]);if(auth.user)return <Navigate to="/app/dashboard" replace/>;return <div className="landing"><PublicHeader/><main><section className="landing-hero"><div className="hero-copy"><span className="hero-tag"><Leaf size={17}/>A little clarity goes a long way</span><h1>Make room for<br/>what matters.</h1><p>Understand your spending. Give your month a plan. Bachat brings your everyday finances into one calm, clear picture.</p><div className="hero-actions"><Link className="button primary large" to="/signup">Start your ledger<ArrowRight size={18}/></Link><a className="button secondary large" href="#preview">Take a closer look</a></div><span className="hero-reassurance"><ShieldCheck size={17}/>Your records stay private. No bank connection needed.</span></div><div className="hero-art" id="preview"><div className="preview-window"><div className="preview-top"><Brand small/><span className="preview-label">Illustrative example</span></div><div className="preview-body"><div className="preview-heading"><span>Your month, at a glance</span><span>November</span></div><div className="preview-stats"><div><span><ArrowDownLeft size={13}/>Income</span><strong>₹50,000</strong></div><div><span><ArrowUpRight size={13}/>Expenses</span><strong>₹18,450</strong></div></div><div className="preview-budget"><div><Target size={18}/><span>Monthly budget</span><strong>₹6,550 left</strong></div><div className="progress-track"><span style={{width:'73.8%'}}/></div></div><div className="preview-bottom"><div className="preview-ring"><div><span>Spending</span><strong>₹18,450</strong></div></div><div className="preview-entries">{[[Utensils,'Food & dining','₹1,250'],[ShoppingBasket,'Groceries','₹2,400'],[Car,'Transport','₹650']].map(([Icon,label,value],i)=>{const I=Icon as typeof Utensils;return <div key={i}><I size={17}/><span>{String(label)}</span><strong>{String(value)}</strong></div>;})}</div></div></div></div><div className="hero-note"><span><Check size={18}/></span><div><strong>The little things add up.</strong><small>So does a little awareness.</small></div></div></div></section><section className="principle-row"><span>Built for your everyday.</span><div><LockKeyhole size={18}/>Private personal records</div><div><Wallet size={18}/>Indian rupee, made familiar</div><div><ChartNoAxesColumn size={18}/>Clear charts. Exact numbers.</div></section><section className="how-section" id="how-it-works"><div className="section-copy"><h2>Less guesswork.<br/>More perspective.</h2><p>You don’t need a complicated system. Just a few small habits and a clear place to keep them.</p></div><div className="feature-columns"><article><span className="feature-icon"><Plus size={25}/></span><h3>Keep the little things.</h3><p>A coffee. A grocery run. Payday. Record income and expenses in a few simple fields.</p></article><article><span className="feature-icon blue"><ChartNoAxesColumn size={25}/></span><h3>See your bigger picture.</h3><p>Understand where expenses go and how your recorded income and spending compare.</p></article><article><span className="feature-icon amber"><Target size={25}/></span><h3>Give your month a plan.</h3><p>Set a realistic spending limit and know how much room remains. Adjust when life changes.</p></article></div></section><section className="privacy-section"><div className="privacy-emblem"><ShieldCheck size={76} strokeWidth={1.1}/></div><div><h2>Personal finance.<br/>Kept personal.</h2><p>Your ledger belongs to you. Secure sign-in, private records, and the freedom to delete your account. No bank credentials. No money movement.</p><Link className="text-link" to="/privacy">Read how we handle your data<ArrowRight size={16}/></Link></div></section><section className="landing-final"><span className="feature-icon"><Leaf size={27}/></span><h2>A little bachat.<br/>A clearer tomorrow.</h2><p>Start with one entry. Build a better picture.</p><Link className="button primary large" to="/signup">Create your account<ArrowRight size={18}/></Link></section></main><PublicFooter/></div>;}
-export function Help(){const {user}=useAuth();return <div className="public-document"><PublicHeader/><main><PageHeading title="A little guidance" description="How your record becomes a clearer picture."/><nav className="help-toc"><a href="#recording">Recording</a><a href="#numbers">Your numbers</a><a href="#filters">Filters</a><a href="#budgets">Budgets</a><a href="#account">Your account</a></nav><section id="recording"><h2>Record, review, adjust</h2><p>Choose Add transaction, select Expense or Income, enter a positive amount, category and date, and optionally add a note. Save only after checking the details. Open any entry to edit or delete it.</p><p>Entry dates run from 1 January 2000 through today in Asia/Kolkata. Amounts use INR with up to two decimal places. You can record up to 10,000 entries in this version.</p></section><section id="numbers"><h2>Know what the numbers mean</h2><p>Recorded income is the sum of income entries in the selected period. Recorded expenses is the sum of expenses. Net cash flow is income minus expenses. For example, ₹50,000 income minus ₹18,450 expenses gives ₹31,550 net cash flow.</p><div className="notice">This is a manual ledger. Net cash flow is not your bank balance, available funds or net worth.</div></section><section id="filters"><h2>Look a little closer</h2><p>Apply a date range, category or type to update your transaction list and dashboard charts. Ranges can span up to 366 inclusive days, including older periods. Reporting can include the rest of the current month even though future entry dates are not allowed.</p><p>Totals use every matching entry, even when history shows only 25 rows on a page. Category charts contain expenses only. A selected income filter therefore has no expense chart. Monthly bars include zero months, and partial boundary months are marked.</p></section><section id="budgets"><h2>A limit for the whole month</h2><p>Each month can have one overall expense limit. All expenses in that month count. Dashboard filters and income do not affect budget spending. The dashboard budget card uses the month containing the selected range’s end date.</p><p>At 80% of the limit you’ll see Near limit, at 100% Limit reached, and above it Over limit. You can still record entries. Unset budgets have no remaining-amount estimate. Limits never repeat automatically.</p></section><section id="account"><h2>Keep access in your hands</h2><p>Verify your email before signing in. If you forget your password, request a reset link on the sign-in page. Verification links expire after 24 hours and reset links after 30 minutes. Both are single-use.</p><p>Changing or resetting your password ends prior sessions. You can also sign out of all devices in Settings. Account deletion needs your current password and typed DELETE confirmation. It removes your active records permanently; read the privacy notice for backup handling.</p></section><Link className="button primary" to={user?'/app/dashboard':'/'}>{user?'Back to dashboard':'Back to home'}<ArrowRight size={16}/></Link></main><PublicFooter/></div>;}
-export function Privacy(){const {user}=useAuth();const {data}=useQuery({queryKey:['public-config'],queryFn:()=>api<{privacyContact:string|null;production:boolean}>('/public/config')});return <div className="public-document"><PublicHeader/><main><PageHeading title="Your data, handled with care" description="Privacy and data use · Updated 3 November 2026"/><section><h2>What Bachat stores</h2><p>Your name, email, password hash, verification/session records, manual income and expense entries, seeded categories and monthly budgets. Currency is INR and the account timezone is Asia/Kolkata. We never ask for your bank password or card details.</p></section><section><h2>Who can see your records</h2><p>The application limits access to the signed-in owner. Other users cannot view your ledger. Authorized infrastructure operators and service providers may have technical access necessary to operate the service; Bachat does not claim end-to-end encryption.</p></section><section><h2>Hosting and account email</h2><p>The configured deployment uses a Node/Express service and MongoDB. Verification and password-reset messages use the configured transactional email provider. Development builds capture emails locally instead of delivering them.</p><p>Operational diagnostics omit passwords, tokens, financial amounts, notes and email addresses. Product analytics and session replay are disabled in this release.</p></section><section><h2>Retention and deletion</h2><p>Active financial records remain until you delete them or your account. Unverified accounts are eligible for cleanup after seven days. Sessions expire within seven days; verification links within 24 hours; password-reset links within 30 minutes. Financial retry receipts expire after 24 hours.</p><p>Account deletion removes active owned data atomically. Minimally identifying deletion-control records are retained for 30 days to prevent accidental resurrection during recovery. The public-launch backup requirement is seven-day retention and a tested restore process; a local development database is not a managed backup service.</p><p>{data?.production?'The production operator must maintain the published retention and recovery settings.':'This is a development release. Managed backups, live email delivery and public-launch operations must be configured and verified before accepting customer data.'}</p></section><section><h2>Your choices</h2><p>You can edit or delete entries, change your password, end all sessions or permanently delete your account in Settings. No bank connection is required. Essential cookies support sign-in and CSRF protection.</p>{data?.privacyContact?<p>Privacy contact: <a className="text-link" href={'mailto:'+data.privacyContact}>{data.privacyContact}</a></p>:<p>The public-launch privacy contact has not been configured. Do not enter sensitive production records in a development build.</p>}</section><div className="inline-actions"><Link className="button primary" to={user?'/app/settings':'/'}>{user?'Back to settings':'Back to home'}</Link>{user&&<Link className="button danger-outline" to="/app/settings/delete-account">Delete account</Link>}</div></main><PublicFooter/></div>;}
+import { useEffect } from 'react';
+import { Link, Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ShieldCheck,
+  ChartNoAxesColumn,
+  Target,
+  Wallet,
+  Check,
+  Leaf,
+  Plus,
+  Utensils,
+  ShoppingBasket,
+  Car,
+  LockKeyhole,
+} from 'lucide-react';
+import { Brand, PageHeading } from './components';
+import { useAuth } from './context';
+import { api } from './api';
+export function PublicHeader() {
+  return (
+    <header className="public-header">
+      <Brand />
+      <nav aria-label="Main navigation">
+        <Link to="/#how-it-works">How it works</Link>
+        <Link to="/help">Help</Link>
+        <Link className="public-signin" to="/login">
+          Sign in
+        </Link>
+        <Link className="button primary small" to="/signup">
+          Start your ledger
+          <ArrowRight size={15} />
+        </Link>
+      </nav>
+    </header>
+  );
+}
+export function PublicFooter() {
+  return (
+    <footer className="public-footer">
+      <Brand small />
+      <span>A little bachat goes a long way.</span>
+      <nav>
+        <Link to="/help">Help</Link>
+        <Link to="/privacy">Privacy</Link>
+        <Link to="/login">Sign in</Link>
+      </nav>
+    </footer>
+  );
+}
+export function Landing() {
+  const auth = useAuth();
+  useEffect(() => {
+    document.title = 'Bachat · Your money, in perspective';
+  }, []);
+  if (auth.user) return <Navigate to="/app/dashboard" replace />;
+  return (
+    <div className="landing">
+      <PublicHeader />
+      <main>
+        <section className="landing-hero">
+          <div className="hero-copy">
+            <span className="hero-tag">
+              <Leaf size={17} />A little clarity goes a long way
+            </span>
+            <h1>
+              Make room for
+              <br />
+              what matters.
+            </h1>
+            <p>
+              Understand your spending. Give your month a plan. Bachat brings your everyday finances
+              into one calm, clear picture.
+            </p>
+            <div className="hero-actions">
+              <Link className="button primary large" to="/signup">
+                Start your ledger
+                <ArrowRight size={18} />
+              </Link>
+              <a className="button secondary large" href="#preview">
+                Take a closer look
+              </a>
+            </div>
+            <span className="hero-reassurance">
+              <ShieldCheck size={17} />
+              Your records stay private. No bank connection needed.
+            </span>
+          </div>
+          <div className="hero-art" id="preview">
+            <div className="preview-window">
+              <div className="preview-top">
+                <Brand small />
+                <span className="preview-label">Illustrative example</span>
+              </div>
+              <div className="preview-body">
+                <div className="preview-heading">
+                  <span>Your month, at a glance</span>
+                  <span>November</span>
+                </div>
+                <div className="preview-stats">
+                  <div>
+                    <span>
+                      <ArrowDownLeft size={13} />
+                      Income
+                    </span>
+                    <strong>₹50,000</strong>
+                  </div>
+                  <div>
+                    <span>
+                      <ArrowUpRight size={13} />
+                      Expenses
+                    </span>
+                    <strong>₹18,450</strong>
+                  </div>
+                </div>
+                <div className="preview-budget">
+                  <div>
+                    <Target size={18} />
+                    <span>Monthly budget</span>
+                    <strong>₹6,550 left</strong>
+                  </div>
+                  <div className="progress-track">
+                    <span style={{ width: '73.8%' }} />
+                  </div>
+                </div>
+                <div className="preview-bottom">
+                  <div className="preview-ring">
+                    <div>
+                      <span>Spending</span>
+                      <strong>₹18,450</strong>
+                    </div>
+                  </div>
+                  <div className="preview-entries">
+                    {[
+                      [Utensils, 'Food & dining', '₹1,250'],
+                      [ShoppingBasket, 'Groceries', '₹2,400'],
+                      [Car, 'Transport', '₹650'],
+                    ].map(([Icon, label, value], i) => {
+                      const I = Icon as typeof Utensils;
+                      return (
+                        <div key={i}>
+                          <I size={17} />
+                          <span>{String(label)}</span>
+                          <strong>{String(value)}</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="hero-note">
+              <span>
+                <Check size={18} />
+              </span>
+              <div>
+                <strong>The little things add up.</strong>
+                <small>So does a little awareness.</small>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="principle-row">
+          <span>Built for your everyday.</span>
+          <div>
+            <LockKeyhole size={18} />
+            Private personal records
+          </div>
+          <div>
+            <Wallet size={18} />
+            Indian rupee, made familiar
+          </div>
+          <div>
+            <ChartNoAxesColumn size={18} />
+            Clear charts. Exact numbers.
+          </div>
+        </section>
+        <section className="how-section" id="how-it-works">
+          <div className="section-copy">
+            <h2>
+              Less guesswork.
+              <br />
+              More perspective.
+            </h2>
+            <p>
+              You don’t need a complicated system. Just a few small habits and a clear place to keep
+              them.
+            </p>
+          </div>
+          <div className="feature-columns">
+            <article>
+              <span className="feature-icon">
+                <Plus size={25} />
+              </span>
+              <h3>Keep the little things.</h3>
+              <p>
+                A coffee. A grocery run. Payday. Record income and expenses in a few simple fields.
+              </p>
+            </article>
+            <article>
+              <span className="feature-icon blue">
+                <ChartNoAxesColumn size={25} />
+              </span>
+              <h3>See your bigger picture.</h3>
+              <p>Understand where expenses go and how your recorded income and spending compare.</p>
+            </article>
+            <article>
+              <span className="feature-icon amber">
+                <Target size={25} />
+              </span>
+              <h3>Give your month a plan.</h3>
+              <p>
+                Set a realistic spending limit and know how much room remains. Adjust when life
+                changes.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section className="privacy-section">
+          <div className="privacy-emblem">
+            <ShieldCheck size={76} strokeWidth={1.1} />
+          </div>
+          <div>
+            <h2>
+              Personal finance.
+              <br />
+              Kept personal.
+            </h2>
+            <p>
+              Your ledger belongs to you. Secure sign-in, private records, and the freedom to delete
+              your account. No bank credentials. No money movement.
+            </p>
+            <Link className="text-link" to="/privacy">
+              Read how we handle your data
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+        <section className="landing-final">
+          <span className="feature-icon">
+            <Leaf size={27} />
+          </span>
+          <h2>
+            A little bachat.
+            <br />A clearer tomorrow.
+          </h2>
+          <p>Start with one entry. Build a better picture.</p>
+          <Link className="button primary large" to="/signup">
+            Create your account
+            <ArrowRight size={18} />
+          </Link>
+        </section>
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
+export function Help() {
+  const { user } = useAuth();
+  return (
+    <div className="public-document">
+      <PublicHeader />
+      <main>
+        <PageHeading
+          title="A little guidance"
+          description="How your record becomes a clearer picture."
+        />
+        <nav className="help-toc">
+          <a href="#recording">Recording</a>
+          <a href="#numbers">Your numbers</a>
+          <a href="#filters">Filters</a>
+          <a href="#budgets">Budgets</a>
+          <a href="#account">Your account</a>
+        </nav>
+        <section id="recording">
+          <h2>Record, review, adjust</h2>
+          <p>
+            Choose Add transaction, select Expense or Income, enter a positive amount, category and
+            date, and optionally add a note. Save only after checking the details. Open any entry to
+            edit or delete it.
+          </p>
+          <p>
+            Entry dates run from 1 January 2000 through today in Asia/Kolkata. Amounts use INR with
+            up to two decimal places. You can record up to 10,000 entries in this version.
+          </p>
+        </section>
+        <section id="numbers">
+          <h2>Know what the numbers mean</h2>
+          <p>
+            Recorded income is the sum of income entries in the selected period. Recorded expenses
+            is the sum of expenses. Net cash flow is income minus expenses. For example, ₹50,000
+            income minus ₹18,450 expenses gives ₹31,550 net cash flow.
+          </p>
+          <div className="notice">
+            This is a manual ledger. Net cash flow is not your bank balance, available funds or net
+            worth.
+          </div>
+        </section>
+        <section id="filters">
+          <h2>Look a little closer</h2>
+          <p>
+            Apply a date range, category or type to update your transaction list and dashboard
+            charts. Ranges can span up to 366 inclusive days, including older periods. Reporting can
+            include the rest of the current month even though future entry dates are not allowed.
+          </p>
+          <p>
+            Totals use every matching entry, even when history shows only 25 rows on a page.
+            Category charts contain expenses only. A selected income filter therefore has no expense
+            chart. Monthly bars include zero months, and partial boundary months are marked.
+          </p>
+        </section>
+        <section id="budgets">
+          <h2>A limit for the whole month</h2>
+          <p>
+            Each month can have one overall expense limit. All expenses in that month count.
+            Dashboard filters and income do not affect budget spending. The dashboard budget card
+            uses the month containing the selected range’s end date.
+          </p>
+          <p>
+            At 80% of the limit you’ll see Near limit, at 100% Limit reached, and above it Over
+            limit. You can still record entries. Unset budgets have no remaining-amount estimate.
+            Limits never repeat automatically.
+          </p>
+        </section>
+        <section id="account">
+          <h2>Keep access in your hands</h2>
+          <p>
+            Verify your email before signing in. If you forget your password, request a reset link
+            on the sign-in page. Verification links expire after 24 hours and reset links after 30
+            minutes. Both are single-use.
+          </p>
+          <p>
+            Changing or resetting your password ends prior sessions. You can also sign out of all
+            devices in Settings. Account deletion needs your current password and typed DELETE
+            confirmation. It removes your active records permanently; read the privacy notice for
+            backup handling.
+          </p>
+        </section>
+        <Link className="button primary" to={user ? '/app/dashboard' : '/'}>
+          {user ? 'Back to dashboard' : 'Back to home'}
+          <ArrowRight size={16} />
+        </Link>
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
+export function Privacy() {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ['public-config'],
+    queryFn: () => api<{ privacyContact: string | null; production: boolean }>('/public/config'),
+  });
+  return (
+    <div className="public-document">
+      <PublicHeader />
+      <main>
+        <PageHeading
+          title="Your data, handled with care"
+          description="Privacy and data use · Updated 3 November 2026"
+        />
+        <section>
+          <h2>What Bachat stores</h2>
+          <p>
+            Your name, email, password hash, verification/session records, manual income and expense
+            entries, seeded categories and monthly budgets. Currency is INR and the account timezone
+            is Asia/Kolkata. We never ask for your bank password or card details.
+          </p>
+        </section>
+        <section>
+          <h2>Who can see your records</h2>
+          <p>
+            The application limits access to the signed-in owner. Other users cannot view your
+            ledger. Authorized infrastructure operators and service providers may have technical
+            access necessary to operate the service; Bachat does not claim end-to-end encryption.
+          </p>
+        </section>
+        <section>
+          <h2>Hosting and account email</h2>
+          <p>
+            The configured deployment uses a Node/Express service and MongoDB. Verification and
+            password-reset messages use the configured transactional email provider. Development
+            builds capture emails locally instead of delivering them.
+          </p>
+          <p>
+            Operational diagnostics omit passwords, tokens, financial amounts, notes and email
+            addresses. Product analytics and session replay are disabled in this release.
+          </p>
+        </section>
+        <section>
+          <h2>Retention and deletion</h2>
+          <p>
+            Active financial records remain until you delete them or your account. Unverified
+            accounts are eligible for cleanup after seven days. Sessions expire within seven days;
+            verification links within 24 hours; password-reset links within 30 minutes. Financial
+            retry receipts expire after 24 hours.
+          </p>
+          <p>
+            Account deletion removes active owned data atomically. Minimally identifying
+            deletion-control records are retained for 30 days to prevent accidental resurrection
+            during recovery. The public-launch backup requirement is seven-day retention and a
+            tested restore process; a local development database is not a managed backup service.
+          </p>
+          <p>
+            {data?.production
+              ? 'The production operator must maintain the published retention and recovery settings.'
+              : 'This is a development release. Managed backups, live email delivery and public-launch operations must be configured and verified before accepting customer data.'}
+          </p>
+        </section>
+        <section>
+          <h2>Your choices</h2>
+          <p>
+            You can edit or delete entries, change your password, end all sessions or permanently
+            delete your account in Settings. No bank connection is required. Essential cookies
+            support sign-in and CSRF protection.
+          </p>
+          {data?.privacyContact ? (
+            <p>
+              Privacy contact:{' '}
+              <a className="text-link" href={'mailto:' + data.privacyContact}>
+                {data.privacyContact}
+              </a>
+            </p>
+          ) : (
+            <p>
+              The public-launch privacy contact has not been configured. Do not enter sensitive
+              production records in a development build.
+            </p>
+          )}
+        </section>
+        <div className="inline-actions">
+          <Link className="button primary" to={user ? '/app/settings' : '/'}>
+            {user ? 'Back to settings' : 'Back to home'}
+          </Link>
+          {user && (
+            <Link className="button danger-outline" to="/app/settings/delete-account">
+              Delete account
+            </Link>
+          )}
+        </div>
+      </main>
+      <PublicFooter />
+    </div>
+  );
+}
