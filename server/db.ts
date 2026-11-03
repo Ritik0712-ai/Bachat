@@ -1,6 +1,6 @@
 import mongoose,{Schema, type ClientSession} from 'mongoose';
 import { config } from './config.js';
-const oid={type:Schema.Types.ObjectId,required:true,index:false};
+const oid={type:Schema.Types.ObjectId,required:true};
 const options={versionKey:false,strict:'throw',timestamps:true} as const;
 const userSchema=new Schema({name:{type:String,required:true,maxLength:80},emailNormalized:{type:String,required:true,unique:true,maxLength:254},passwordHash:{type:String,required:true},emailVerifiedAt:{type:Date,default:null},currency:{type:String,enum:['INR'],default:'INR'},timeZone:{type:String,default:'Asia/Kolkata'},authVersion:{type:Number,default:1},version:{type:Number,default:1},ledgerRevision:{type:BigInt,default:0n},transactionCount:{type:Number,default:0,min:0,max:10000},analyticsId:{type:String,required:true,unique:true}},options);
 const categorySchema=new Schema({userId:oid,key:{type:String,required:true},name:{type:String,required:true},type:{type:String,enum:['income','expense'],required:true},colorKey:String,sortOrder:Number},{...options,timestamps:{createdAt:true,updatedAt:false}});
