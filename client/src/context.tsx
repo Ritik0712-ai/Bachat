@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import type { User } from '../../shared/domain';
 import { api, ApiError, financeChannel } from './api';
+import { clearDrafts, retainOnlyOwner } from './drafts';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await api('/auth/logout', { method: 'POST', body: {} });
     qc.clear();
+    clearDrafts();
     setUser(null);
     setExpired(false);
     financeChannel?.postMessage({ type: 'logout' });
@@ -56,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const listener = (e: MessageEvent) => {
       if (e.data?.type === 'logout') {
         qc.clear();
+        clearDrafts();
         setUser(null);
       } else if (e.data?.type === 'changed') void qc.invalidateQueries();
     };
@@ -74,6 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         setUser: (u) => {
           qc.clear();
+          if (u) retainOnlyOwner(u.id);
+          else clearDrafts();
           setUser(u);
           setExpired(false);
         },

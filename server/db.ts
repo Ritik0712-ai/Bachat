@@ -2,6 +2,7 @@ import mongoose, { Schema, type ClientSession } from 'mongoose';
 import { config } from './config.js';
 const oid = { type: Schema.Types.ObjectId, required: true };
 const options = { versionKey: false, strict: 'throw', timestamps: true } as const;
+mongoose.set('autoIndex', !config.production);
 const userSchema = new Schema(
   {
     name: { type: String, required: true, maxLength: 80 },

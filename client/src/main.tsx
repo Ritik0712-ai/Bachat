@@ -106,10 +106,9 @@ function AppShell() {
       />
     );
   const name = auth.user.name,
-    initials = name
-      .split(' ')
-      .map((x) => x[0])
+    initials = (name.match(/\p{L}+/gu) || [])
       .slice(0, 2)
+      .map((x) => x[0])
       .join('')
       .toUpperCase();
   const section = location.pathname.includes('transactions')
@@ -307,7 +306,9 @@ const router = createBrowserRouter([
     ],
   },
 ]);
-createRoot(document.getElementById('root')!).render(
+const root = import.meta.hot?.data.root || createRoot(document.getElementById('root')!);
+if (import.meta.hot) import.meta.hot.data.root = root;
+root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

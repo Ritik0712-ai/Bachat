@@ -69,7 +69,9 @@ await atomic(async (s) => {
         occurredOn: day,
         note: note + ' · sample entry',
       });
-    await BudgetModel.create([{ userId: user._id, month: m, limitMinor: 3500000 }], { session: s });
+    await BudgetModel.create([{ userId: user._id, month: m, limitMinor: 3500000n }], {
+      session: s,
+    });
   }
   await TxModel.insertMany(
     rows.map(({ key, ...r }) => ({

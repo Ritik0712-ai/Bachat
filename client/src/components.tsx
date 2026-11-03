@@ -111,8 +111,12 @@ export function ErrorPanel({ error, retry }: { error: unknown; retry?: () => voi
   );
 }
 export function InlineError({ error }: { error: unknown }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (error) ref.current?.focus();
+  }, [error]);
   return error ? (
-    <div className="inline-error" role="alert" tabIndex={-1}>
+    <div ref={ref} className="inline-error" role="alert" tabIndex={-1}>
       <AlertCircle size={17} />
       <span>{error instanceof Error ? error.message : String(error)}</span>
     </div>
@@ -215,7 +219,7 @@ export function Dialog({
     </dialog>
   );
 }
-export function useUnsaved(dirty: boolean) {
+export function useUnsaved(dirty: boolean, onDiscard?: () => void) {
   const allowed = useRef(false);
   const nav = useNavigate();
   const blocker = useBlocker(
@@ -241,7 +245,13 @@ export function useUnsaved(dirty: boolean) {
             <button className="button secondary" autoFocus onClick={() => blocker.reset()}>
               Keep editing
             </button>
-            <button className="button danger" onClick={() => blocker.proceed()}>
+            <button
+              className="button danger"
+              onClick={() => {
+                onDiscard?.();
+                blocker.proceed();
+              }}
+            >
               Discard changes
             </button>
           </div>

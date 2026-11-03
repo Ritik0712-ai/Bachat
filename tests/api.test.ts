@@ -1,8 +1,10 @@
-import { beforeAll, afterAll, describe, it, expect } from 'vitest';
+import { beforeAll, afterAll, describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { randomUUID } from 'node:crypto';
+import { type Server } from 'node:http';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { createApp } from '../server/app.js';
 import {
   connect,
@@ -20,9 +22,10 @@ import { config } from '../server/config.js';
 import { today, monthRange, offsetMonth } from '../shared/domain.js';
 const app = createApp();
 let repl: MongoMemoryReplSet;
+let server: Server;
 let n = 10;
 class Client {
-  agent = request.agent(app);
+  agent = request.agent(server);
   token = '';
   ip = '198.51.100.' + n++;
   email = 'test-' + randomUUID() + '@example.test';
@@ -87,8 +90,106 @@ class Client {
 beforeAll(async () => {
   repl = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
   await connect(repl.getUri());
+  server = app.listen(0, '127.0.0.1');
+});
+
+describe('large ledgers and atomic failure boundaries', () => {
+  it('aggregates and deletes a real 10,000-row multi-month history', async () => {
+    const c = await new Client().account();
+    const current = today().slice(0, 7);
+    const start = offsetMonth(current, -5);
+    const userId = new mongoose.Types.ObjectId(c.userId);
+    await TxModel.insertMany(
+      Array.from({ length: 10000 }, (_, i) => ({
+        userId,
+        type: i % 5 === 0 ? 'income' : 'expense',
+        categoryId: new mongoose.Types.ObjectId(c.category(i % 5 === 0 ? 'salary' : 'food_dining')),
+        amountMinor: i % 5 === 0 ? 10000n : 1001n,
+        occurredOn: offsetMonth(start, i % 6) + '-01',
+        note: 'Synthetic large-history fixture',
+      })),
+    );
+    await UserModel.updateOne({ _id: userId }, { $set: { transactionCount: 10000 } });
+    const query = new URLSearchParams({
+      dateFrom: start + '-01',
+      dateTo: monthRange(current).dateTo,
+    });
+    const timings = await Promise.all(
+      Array.from({ length: 20 }, async () => {
+        const started = performance.now();
+        const response = await c.get('/dashboard?' + query);
+        expect(response.status).toBe(200);
+        expect(response.body.data.totals).toEqual({
+          incomeMinor: 20000000,
+          expenseMinor: 8008000,
+          netCashFlowMinor: 11992000,
+        });
+        expect(response.body.data.monthlyTrends).toHaveLength(6);
+        return performance.now() - started;
+      }),
+    );
+    timings.sort((a, b) => a - b);
+    await mkdir('.data', { recursive: true });
+    await writeFile(
+      '.data/load-burst.json',
+      JSON.stringify(
+        {
+          fixture: 'synthetic-10000-rows',
+          concurrentRequests: 20,
+          p95Milliseconds: Math.round(timings[18]),
+          note: 'local integration burst, not five-minute production load test',
+        },
+        null,
+        2,
+      ),
+    );
+    const removed = await c.send('delete', '/me', {
+      currentPassword: c.password,
+      confirmation: 'DELETE',
+    });
+    expect(removed.status).toBe(204);
+    expect(await TxModel.countDocuments({ userId })).toBe(0);
+    expect(await TombModel.findOne({ deletedUserId: userId })).toBeTruthy();
+  });
+  it('allows only one racing insertion at the 10,000-entry boundary', async () => {
+    const c = await new Client().account();
+    await UserModel.updateOne({ _id: c.userId }, { $set: { transactionCount: 9999 } });
+    const results = await Promise.all([c.add(1), c.add(1)]);
+    expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+    expect((await UserModel.findById(c.userId))?.transactionCount).toBe(10000);
+    expect(await TxModel.countDocuments({ userId: c.userId })).toBe(1);
+  });
+  it('rolls back both partial purge and tombstone when a purge step fails', async () => {
+    const c = await new Client().account();
+    await c.add();
+    const injected = vi
+      .spyOn(BudgetModel, 'deleteMany')
+      .mockRejectedValueOnce(new Error('INJECTED_FAILURE'));
+    const response = await c.send('delete', '/me', {
+      currentPassword: c.password,
+      confirmation: 'DELETE',
+    });
+    injected.mockRestore();
+    expect(response.status).toBe(500);
+    expect(await UserModel.findById(c.userId)).toBeTruthy();
+    expect(await TxModel.countDocuments({ userId: c.userId })).toBe(1);
+    expect(await TombModel.findOne({ deletedUserId: c.userId })).toBeNull();
+  });
+  it('cannot leave an orphan when account deletion races a financial write', async () => {
+    const c = await new Client().account();
+    const [write, deletion] = await Promise.all([
+      c.add(1),
+      c.send('delete', '/me', { currentPassword: c.password, confirmation: 'DELETE' }),
+    ]);
+    expect([201, 401]).toContain(write.status);
+    expect(deletion.status).toBe(204);
+    expect(await UserModel.findById(c.userId)).toBeNull();
+    expect(await TxModel.countDocuments({ userId: c.userId })).toBe(0);
+  });
 });
 afterAll(async () => {
+  if (server)
+    await new Promise<void>((resolve, reject) => server.close((e) => (e ? reject(e) : resolve())));
   await mongoose.disconnect();
   if (repl) await repl.stop();
 });

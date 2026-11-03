@@ -21,7 +21,8 @@ import {
   type TransactionInput,
 } from '../../shared/domain';
 import { api, ApiError } from './api';
-import { useOnline, useToast } from './context';
+import { useAuth, useOnline, useToast } from './context';
+import { rememberDraft, pendingDraft, clearDrafts } from './drafts';
 import {
   PageHeading,
   Loading,
@@ -213,6 +214,7 @@ export default function Transactions() {
   );
 }
 export function TransactionForm() {
+  const { user } = useAuth();
   const { id } = useParams(),
     editing = !!id,
     [search] = useSearchParams(),
@@ -242,12 +244,13 @@ export function TransactionForm() {
     [error, setError] = useState<unknown>(null),
     [fields, setFields] = useState<Record<string, string>>({}),
     [previousDraft, setPreviousDraft] = useState<string | null>(null);
+  const [resume, setResume] = useState(() => pendingDraft(user!.id, id || 'new'));
   const initialized = useRef(false),
     operation = useOperationKey(),
     online = useOnline(),
     toast = useToast(),
     refresh = useFinanceRefresh(),
-    unsaved = useUnsaved(dirty);
+    unsaved = useUnsaved(dirty, clearDrafts);
   function fill(t: Transaction) {
     setType(t.type);
     setAmount((t.amountMinor / 100).toFixed(2));
@@ -264,6 +267,18 @@ export function TransactionForm() {
       initialized.current = true;
     }
   }, [record]);
+  useEffect(() => {
+    if (dirty && !resume)
+      rememberDraft({
+        ownerId: user!.id,
+        resourceId: id || 'new',
+        type,
+        amount,
+        categoryId,
+        occurredOn,
+        note,
+      });
+  }, [dirty, type, amount, categoryId, occurredOn, note, resume]);
   function changed() {
     setDirty(true);
     if (!operation.ambiguous()) operation.reset();
@@ -291,6 +306,7 @@ export function TransactionForm() {
         body: editing ? { ...body, version } : body,
         key: operation.key(),
       });
+      clearDrafts();
       setDirty(false);
       await refresh();
       toast(editing ? 'Transaction updated.' : 'Transaction added.');
@@ -317,6 +333,46 @@ export function TransactionForm() {
     );
   return (
     <>
+      {resume && (
+        <Dialog
+          title="Resume your unsaved entry?"
+          onClose={() => {
+            clearDrafts();
+            setResume(null);
+          }}
+        >
+          <p>
+            This draft stayed in this tab while you signed in again. Review the details and current
+            record before saving.
+          </p>
+          <div className="form-actions">
+            <button
+              className="button secondary"
+              autoFocus
+              onClick={() => {
+                clearDrafts();
+                setResume(null);
+              }}
+            >
+              Discard
+            </button>
+            <button
+              className="button primary"
+              onClick={() => {
+                setType(resume.type);
+                setAmount(resume.amount);
+                setCategoryId(resume.categoryId);
+                setDate(resume.occurredOn);
+                setNote(resume.note);
+                setDirty(true);
+                setResume(null);
+              }}
+            >
+              Resume unsaved entry
+            </button>
+          </div>
+        </Dialog>
+      )}
       <PageHeading
         title={editing ? 'Edit transaction' : 'A little entry. A clearer picture.'}
         description={

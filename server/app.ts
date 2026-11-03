@@ -38,6 +38,9 @@ export function createApp() {
     res.locals.requestId = randomUUID();
     res.set('Cache-Control', 'no-store');
     res.set('X-Request-Id', res.locals.requestId);
+    const json = res.json.bind(res);
+    res.json = (body) =>
+      json({ ...body, meta: { ...body?.meta, requestId: res.locals.requestId } });
     next();
   });
   app.get('/api/v1/health/live', (_req, res) => res.json({ data: { status: 'ok' } }));
