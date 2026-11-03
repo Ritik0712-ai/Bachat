@@ -324,7 +324,7 @@ export function useOperationKey() {
       unconfirmed.current = false;
     },
     failed: (e: unknown) => {
-      unconfirmed.current = e instanceof ApiError && e.status === 0;
+      unconfirmed.current = e instanceof ApiError && (e.status === 0 || e.status >= 500);
     },
     ambiguous: () => unconfirmed.current,
   };

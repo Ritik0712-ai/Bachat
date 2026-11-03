@@ -53,7 +53,18 @@ export async function api<T>(
     );
   }
   if (response.status === 204) return undefined as T;
-  const result = await response.json();
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw new ApiError(
+      response.status >= 500 ? response.status : 0,
+      'UNCONFIRMED_RESPONSE',
+      method === 'GET'
+        ? 'The service returned an unexpected response. Please retry.'
+        : 'The request could not be confirmed. Retry the same submission before making another change.',
+    );
+  }
   if (!response.ok) {
     const error = result.error || {};
     if (error.code === 'CSRF_EXPIRED' || error.code === 'CSRF_INVALID') csrfToken = undefined;
