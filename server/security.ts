@@ -12,7 +12,7 @@ function equal(a:string,b:string){const x=Buffer.from(a),y=Buffer.from(b);return
 export function issueCsrf(_req:Request,res:Response){const value=randomBytes(24).toString('hex')+'.'+Date.now();const token=value+'.'+hmac(value);res.cookie(csrfCookie,token,{...cookieOptions,maxAge:3600000});res.json({data:{token}});}
 export function csrf(req:Request,_res:Response,next:NextFunction){
   if(['GET','HEAD','OPTIONS'].includes(req.method)) return next();
-  if(req.get('origin')!==config.origin) return next(new (class extends Error {status=403;code='ORIGIN_DENIED';})());
+  if(req.get('origin')!==config.origin) return next(new ErrorWithCode(403,'ORIGIN_DENIED','This request came from an untrusted origin.'));
   const token=req.get('x-csrf-token')||'', cookie=req.cookies[csrfCookie]||'';
   const [nonce,time,signature]=token.split('.');const value=nonce+'.'+time;
   if(!nonce||!time||!signature||!equal(signature,hmac(value))||!equal(token,cookie)) return next(new ErrorWithCode(403,'CSRF_INVALID','Refresh this page and try again.'));
