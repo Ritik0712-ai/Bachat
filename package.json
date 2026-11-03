@@ -1,0 +1,13 @@
+{
+  "name": "bachat", "version": "0.1.0", "private": true, "type": "module",
+  "engines": {"node": ">=22.12"},
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
+    "build": "tsc -p tsconfig.server.json && vite build",
+    "start": "node dist/server/server/index.js",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "test": "vitest run", "test:watch": "vitest",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "maintenance": "tsx scripts/maintenance.ts"
+  }
+}
