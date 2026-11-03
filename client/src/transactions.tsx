@@ -16,6 +16,7 @@ import {
   dateLabel,
   today,
   parseMoney,
+  filtersSchema,
   type Transaction,
   type Category,
   type TransactionInput,
@@ -141,6 +142,15 @@ export default function Transactions() {
         action={<AddButton returnTo={location.pathname + location.search} />}
       />
       <FilterBar value={state.filters} onApply={state.apply} onReset={state.reset} />
+      {location.state?.savedOutsideId && (
+        <div className="notice">
+          <p>Saved outside your current filters.</p>
+          <Link className="text-link" to={'/app/transactions/' + location.state.savedOutsideId}>
+            View transaction
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+      )}
       {!state.valid ? (
         <ErrorPanel error={state.error} retry={state.reset} />
       ) : isPending ? (
@@ -310,10 +320,24 @@ export function TransactionForm() {
       setDirty(false);
       await refresh();
       toast(editing ? 'Transaction updated.' : 'Transaction added.');
+      const query = new URL(returnTo, window.location.origin).searchParams;
+      const parsed = filtersSchema.safeParse(
+        Object.fromEntries(
+          [...query].filter(([key]) => ['dateFrom', 'dateTo', 'type', 'categoryId'].includes(key)),
+        ),
+      );
+      const f = parsed.success ? parsed.data : null;
+      const outside =
+        f &&
+        (saved.occurredOn < f.dateFrom ||
+          saved.occurredOn > f.dateTo ||
+          (f.type && saved.type !== f.type) ||
+          (f.categoryId && saved.categoryId !== f.categoryId));
       unsaved.leave(
         editing
           ? '/app/transactions/' + saved.id + '?returnTo=' + encodeURIComponent(returnTo)
           : returnTo,
+        outside ? { savedOutsideId: saved.id } : undefined,
       );
     } catch (e) {
       setError(e);
@@ -402,9 +426,7 @@ export function TransactionForm() {
                 type="button"
                 className="button secondary small"
                 onClick={async () => {
-                  setPreviousDraft(
-                    `${type} · ${money(parseMoney(amount))} · ${occurredOn}\n${note}`,
-                  );
+                  setPreviousDraft(`${type} · INR ${amount} · ${occurredOn}\n${note}`);
                   const latest = await refetch();
                   if (latest.data) {
                     fill(latest.data);

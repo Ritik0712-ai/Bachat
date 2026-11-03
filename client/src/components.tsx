@@ -233,9 +233,9 @@ export function useUnsaved(dirty: boolean, onDiscard?: () => void) {
     }
   });
   return {
-    leave: (to: string) => {
+    leave: (to: string, state?: unknown) => {
       allowed.current = true;
-      nav(to);
+      nav(to, { state });
     },
     guard:
       blocker.state === 'blocked' ? (

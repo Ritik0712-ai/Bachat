@@ -108,6 +108,15 @@ export default function Dashboard() {
         action={<AddButton returnTo={location.pathname + location.search} />}
       />
       <FilterBar value={state.filters} onApply={state.apply} onReset={state.reset} />
+      {location.state?.savedOutsideId && (
+        <div className="notice">
+          <p>Saved outside your current filters.</p>
+          <Link className="text-link" to={'/app/transactions/' + location.state.savedOutsideId}>
+            View transaction
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+      )}
       {!state.valid ? (
         <ErrorPanel error={state.error} retry={state.reset} />
       ) : isPending ? (

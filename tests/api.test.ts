@@ -90,7 +90,9 @@ class Client {
 beforeAll(async () => {
   repl = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
   await connect(repl.getUri());
-  server = app.listen(0, '127.0.0.1');
+  await new Promise<void>((resolve) => {
+    server = app.listen(0, '127.0.0.1', resolve);
+  });
 });
 
 describe('large ledgers and atomic failure boundaries', () => {
@@ -188,12 +190,64 @@ describe('large ledgers and atomic failure boundaries', () => {
   });
 });
 afterAll(async () => {
-  if (server)
+  if (server?.listening)
     await new Promise<void>((resolve, reject) => server.close((e) => (e ? reject(e) : resolve())));
   await mongoose.disconnect();
   if (repl) await repl.stop();
 });
 describe('secure account lifecycle', () => {
+  it('keeps profile versions separate from financial writes and never exposes hashes', async () => {
+    const c = await new Client().account();
+    await c.add(1);
+    const profile = await c.send('patch', '/me', { name: 'Updated sample owner', version: 1 });
+    expect(profile.status).toBe(200);
+    expect(profile.body.data.version).toBe(2);
+    expect(profile.body.data).not.toHaveProperty('passwordHash');
+    expect(profile.body.data).not.toHaveProperty('authVersion');
+    expect((await c.send('patch', '/me', { name: 'Stale overwrite', version: 1 })).status).toBe(
+      409,
+    );
+  });
+  it('changes password only with current proof and invalidates the old credential', async () => {
+    const c = await new Client().account();
+    const newPassword = 'Changed synthetic passphrase 789!';
+    expect(
+      (await c.send('post', '/me/change-password', { currentPassword: 'wrong', newPassword }))
+        .status,
+    ).toBe(422);
+    expect(
+      (await c.send('post', '/me/change-password', { currentPassword: c.password, newPassword }))
+        .status,
+    ).toBe(204);
+    expect((await c.get('/dashboard')).status).toBe(401);
+    expect(
+      (await c.send('post', '/auth/login', { email: c.email, password: c.password })).status,
+    ).toBe(401);
+    expect(
+      (await c.send('post', '/auth/login', { email: c.email, password: newPassword })).status,
+    ).toBe(200);
+  });
+  it('reissuing a verification token invalidates the previous link', async () => {
+    const c = await new Client().ready();
+    await c.send('post', '/auth/register', {
+      name: 'Sample',
+      email: c.email,
+      password: c.password,
+    });
+    const first = capturedMail.findLast((m) => m.to === c.email)!;
+    expect((await c.send('post', '/auth/resend-verification', { email: c.email })).status).toBe(
+      202,
+    );
+    const second = capturedMail.findLast((m) => m.to === c.email)!;
+    const token = (url: string) => new URLSearchParams(new URL(url).hash.slice(1)).get('token');
+    expect(token(first.url)).not.toBe(token(second.url));
+    expect((await c.send('post', '/auth/verify-email', { token: token(first.url) })).status).toBe(
+      422,
+    );
+    expect((await c.send('post', '/auth/verify-email', { token: token(second.url) })).status).toBe(
+      200,
+    );
+  });
   it('requires CSRF and exact Origin, then enforces verification', async () => {
     const c = await new Client().ready();
     const noCsrf = await c.agent
