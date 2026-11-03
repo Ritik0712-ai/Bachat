@@ -41,7 +41,7 @@ Keyboard controls, semantic labels, native dialog focus handling, chart tables, 
 
 ## Hosting and commercial boundary
 
-The app is running locally with persistent MongoDB files and captured development email. Render access and the intended workspace were verified; no public Bachat service was created. Atlas MCP access is denied by the organization's AI-access policy. A production URI or enabled organization access is still needed.
+The app is running locally with persistent MongoDB files and captured development email. Render access and the intended workspace were verified; no public Bachat service was created. Subsequent Atlas setup resolved the organization AI-access restriction and provisioned the dedicated Bachat project/free bachat cluster in AWS Singapore. The current development IP is allowlisted. No database user exists yet, and no Atlas migration or application request has been verified. See [Atlas setup status](11-atlas-setup.md).
 
 Also outstanding: real Resend API key/verified sender and inbox-delivery checks, operator privacy contact, production secrets/network rules, scheduled maintenance/monitoring, provider-backed backups, a timed restore drill and live release smoke. The restore-scrub utility exists but no provider restore has been certified. Deployment target is Node 24.22.2, selected from the official supported Node 24 release index; local verification used 24.17.0 and CI follows Node 24.
 

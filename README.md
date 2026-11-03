@@ -70,7 +70,9 @@ Amounts are BSON Int64 paise. User IDs are derived from sessions. Financial writ
 
 Render workspace selected by the owner: `tea-d8pqhvb6sc1c73d1dhmg`. [render.yaml](render.yaml) is a hosting definition, not evidence that a service is live. Follow the [deployment/recovery runbook](docs/09-deployment-and-recovery.md).
 
-Cloud launch still requires Atlas access/URI, a verified sender/key, an actual privacy contact, scheduled maintenance/monitoring, backup/restore validation and live smoke checks. Atlas MCP was blocked by the organization's AI-access policy during setup. No paid infrastructure or real payment integration has been activated.
+The dedicated Atlas project **Bachat** and free **bachat** cluster now exist in AWS Singapore. The current development IP is allowlisted. Database-user creation, the private connection URI and live migrations remain pending; see [Atlas setup status](docs/11-atlas-setup.md). The earlier organization AI-access restriction has been resolved.
+
+Cloud launch still requires a verified sender/key, an actual privacy contact, scheduled maintenance/monitoring, backup/restore validation and live smoke checks. No paid infrastructure or real payment integration has been activated.
 
 Monetization is specified as a proposed future paid tier with a validation sequence. It is not a revenue claim. Existing user privacy/security/deletion and correction of stored records must remain independent of subscription state.
 

@@ -4,7 +4,7 @@
 
 The repository implements the core website and a local MongoDB-backed development environment. A hosting configuration is not a live deployment. No production database, email delivery, backup schedule or payment account is provisioned by this file.
 
-User-confirmed Render workspace: **Ritik's workspace**, `tea-d8pqhvb6sc1c73d1dhmg`. Read-only discovery confirmed access. Atlas MCP returned an organization policy denying AI client access. Reauthentication cannot fix that policy. An organization owner must enable access, or the operator can supply a connection URI through local/provider secret settings. Never paste connection strings or API keys into chat or Git.
+User-confirmed Render workspace: **Ritik's workspace**, `tea-d8pqhvb6sc1c73d1dhmg`. Read-only discovery confirmed access. The earlier Atlas organization AI-access restriction has been resolved. A dedicated **Bachat** project and free **bachat** cluster have been provisioned in AWS Singapore; current development-IP access is configured. Database credentials, migrations and live database verification remain pending. See [Atlas setup status](11-atlas-setup.md) for the precise handoff. Never paste connection strings or API keys into chat or Git.
 
 ## Single-service Render path
 
