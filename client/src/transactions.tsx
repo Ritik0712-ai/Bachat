@@ -293,7 +293,7 @@ export function TransactionForm() {
     setDirty(true);
     if (!operation.ambiguous()) operation.reset();
   }
-  async function submit(e: FormEvent) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setFields({});
