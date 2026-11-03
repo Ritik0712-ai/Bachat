@@ -334,6 +334,7 @@ export default function Budgets({ mode = 'view' }: { mode?: 'view' | 'edit' | 'r
       {mode === 'remove' && (
         <Dialog
           title="Remove this spending limit?"
+          fullScreenOnMobile
           onClose={() => {
             if (!busy) unsaved.leave(back);
           }}

@@ -65,7 +65,8 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   const [token] = useState(() => {
     if (!['verify-email', 'reset-password'].includes(mode)) return '';
     const value = new URLSearchParams(location.hash.slice(1)).get('token') || '';
-    if (location.hash) window.history.replaceState(null, '', location.pathname + location.search);
+    if (location.hash)
+      window.history.replaceState(window.history.state, '', location.pathname + location.search);
     return value;
   });
   const unsaved = useUnsaved(!!(name || password) && !success && !busy);
@@ -147,7 +148,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
         </div>
         <span className="auth-story-footer">A little bachat goes a long way.</span>
       </aside>
-      <main className="auth-main">
+      <main className="auth-main" id="main-content">
         <div className="auth-mobile-brand">
           <Brand />
         </div>

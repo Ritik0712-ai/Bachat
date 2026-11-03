@@ -8,6 +8,8 @@ import { CATEGORY_SEEDS, today, offsetMonth, monthRange } from '../shared/domain
 if (process.env.NODE_ENV === 'production')
   throw new Error('Synthetic seeding is disabled in production.');
 const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27018/?replicaSet=testset';
+if (!['localhost', '127.0.0.1', '[::1]'].includes(new URL(uri).hostname))
+  throw new Error('Synthetic seeding is restricted to a local loopback MongoDB database.');
 await connect(uri);
 const email = 'sample-' + randomUUID().slice(0, 8) + '@bachat.example.test',
   password = randomBytes(24).toString('base64url'),

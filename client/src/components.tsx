@@ -1,4 +1,15 @@
-import { useEffect, useRef, useState, type ReactNode, type InputHTMLAttributes } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useId,
+  Children,
+  cloneElement,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+  type InputHTMLAttributes,
+} from 'react';
 import { Link, useBeforeUnload, useBlocker, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
@@ -153,16 +164,39 @@ export function Field({
   helper?: string;
   children: ReactNode;
 }) {
+  const inputId = useId(),
+    descriptionId = inputId + '-description';
+  function wire(node: ReactNode): ReactNode {
+    if (!isValidElement(node)) return node;
+    const element = node as ReactElement<Record<string, unknown>>;
+    if (typeof element.type !== 'string' || ['input', 'select', 'textarea'].includes(element.type))
+      return cloneElement(element, {
+        id: inputId,
+        'aria-invalid': error ? true : undefined,
+        'aria-describedby': error || helper ? descriptionId : undefined,
+      });
+    return element.props.children
+      ? cloneElement(element, {}, Children.map(element.props.children as ReactNode, wire))
+      : element;
+  }
   return (
-    <label className={'field ' + (error ? 'invalid' : '')}>
-      <span className="field-label">{label}</span>
-      {children}
+    <div className={'field ' + (error ? 'invalid' : '')}>
+      <label htmlFor={inputId} className="field-label">
+        {label}
+      </label>
+      {Children.map(children, wire)}
       {error ? (
-        <span className="field-error">{error}</span>
+        <span id={descriptionId} className="field-error">
+          {error}
+        </span>
       ) : (
-        helper && <span className="field-helper">{helper}</span>
+        helper && (
+          <span id={descriptionId} className="field-helper">
+            {helper}
+          </span>
+        )
       )}
-    </label>
+    </div>
   );
 }
 export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
@@ -184,16 +218,24 @@ export function Dialog({
   title,
   children,
   onClose,
+  fullScreenOnMobile = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  fullScreenOnMobile?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = ref.current!;
     const prev = document.activeElement as HTMLElement;
     element.showModal();
+    (
+      element.querySelector<HTMLElement>('[autofocus]') ||
+      element.querySelector<HTMLElement>(
+        'input,select,textarea,button:not([aria-label="Close dialog"])',
+      )
+    )?.focus();
     return () => {
       element.close();
       prev?.focus();
@@ -201,7 +243,7 @@ export function Dialog({
   }, []);
   return (
     <dialog
-      className="dialog"
+      className={'dialog' + (fullScreenOnMobile ? ' route-dialog' : '')}
       ref={ref}
       onCancel={(e) => {
         e.preventDefault();

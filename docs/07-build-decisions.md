@@ -15,3 +15,9 @@ Build the complete manual-ledger core first. A future paid tier can sell advance
 ## Runtime
 
 Node 24 is the deployment target. Local checks may run on the installed supported Node 22.23 runtime; record this in verification. The development API can start a local MongoDB replica set with persistent files. This is a real MongoDB database for local use, not Atlas verification. Production requires an explicitly configured Atlas URI, secrets, sender and privacy contact.
+
+The active execution runtime was subsequently verified as Node 24.17.0. Client forms use native controls and shared Zod validation with explicit state instead of React Hook Form; the unused library was removed. This keeps the same server-authoritative input contract without an unnecessary dependency.
+
+The default hosting Blueprint serves the client and API together on Render. A Vercel frontend proxying the Render API is also documented. Hosting both on one origin preserves the cookie contract and reduces initial deployment configuration. Neither path has been declared deployed without live service evidence.
+
+Product analytics are disabled. The API additionally exposes nonsecret `/public/config` for privacy-contact/development-state copy. `docs/api.openapi.json` documents the 26 implemented HTTP operations. Schema/index migration and restore-scrub scripts are part of the compiled build.

@@ -10,7 +10,7 @@ function secret(key: string) {
 export const config = {
   production,
   port: Number(process.env.PORT || 4000),
-  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  origin: process.env.FRONTEND_ORIGIN || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173',
   db: process.env.APP_DB || 'bachat_app',
   controlDb: process.env.CONTROL_DB || 'bachat_control',
   mongo: process.env.MONGODB_URI || '',

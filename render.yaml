@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: bachat
+    runtime: node
+    region: singapore
+    plan: free
+    repo: https://github.com/Ritik0712-ai/Bachat
+    branch: main
+    autoDeployTrigger: checksPass
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/server/scripts/migrate.js && npm start
+    healthCheckPath: /api/v1/health/ready
+    envVars:
+      - key: NODE_VERSION
+        value: 24.22.2
+      - key: NODE_ENV
+        value: production
+      - key: APP_DB
+        value: bachat_app
+      - key: CONTROL_DB
+        value: bachat_control
+      - key: JWT_KEY_ID
+        value: v1
+      - key: JWT_SIGNING_KEY
+        generateValue: true
+      - key: CSRF_SIGNING_KEY
+        generateValue: true
+      - key: RATE_LIMIT_HASH_KEY
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: PRIVACY_CONTACT
+        sync: false

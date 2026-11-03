@@ -60,7 +60,7 @@ export function Landing() {
   return (
     <div className="landing">
       <PublicHeader />
-      <main>
+      <main id="main-content">
         <section className="landing-hero">
           <div className="hero-copy">
             <span className="hero-tag">
@@ -263,7 +263,7 @@ export function Help() {
   return (
     <div className="public-document">
       <PublicHeader />
-      <main>
+      <main id="main-content">
         <PageHeading
           title="A little guidance"
           description="How your record becomes a clearer picture."
@@ -357,7 +357,7 @@ export function Privacy() {
   return (
     <div className="public-document">
       <PublicHeader />
-      <main>
+      <main id="main-content">
         <PageHeading
           title="Your data, handled with care"
           description="Privacy and data use · Updated 3 November 2026"

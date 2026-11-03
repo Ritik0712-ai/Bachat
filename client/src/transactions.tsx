@@ -705,6 +705,7 @@ export function TransactionDetail({ deleting = false }: { deleting?: boolean }) 
       {deleting && (
         <Dialog
           title="Delete this transaction?"
+          fullScreenOnMobile
           onClose={() => {
             if (!busy) unsaved.leave(detail);
           }}

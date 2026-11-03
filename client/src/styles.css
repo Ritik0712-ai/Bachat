@@ -3237,3 +3237,25 @@ h1:focus {
     scroll-behavior: auto !important;
   }
 }
+
+@media (max-width: 767px) {
+  .route-dialog {
+    width: 100%;
+    max-width: none;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    margin: 0;
+    padding: 25px;
+  }
+  .icon-button,
+  .tx-actions .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .view-toggle {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
