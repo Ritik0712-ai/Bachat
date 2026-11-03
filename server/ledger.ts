@@ -11,12 +11,12 @@ export const ledgerRouter=Router();
 const sort={occurredOn:-1,createdAt:-1,_id:-1} as const;
 const oid=(id:string)=>new mongoose.Types.ObjectId(idSchema.parse(id));
 function monthParam(value:string){if(!validMonth(value)||value<'2000-01'||value>offsetMonth(today().slice(0,7),12))fail(422,'VALIDATION_ERROR','Choose a month from January 2000 to twelve months ahead.');return value;}
-async function matchFilters(userId:unknown,filters:Filters,session?:ClientSession){
+async function matchFilters(userId:mongoose.Types.ObjectId,filters:Filters,session?:ClientSession){
   if(filters.categoryId){const cat=await CategoryModel.findOne({_id:oid(filters.categoryId),userId}).session(session||null).lean();if(!cat)fail(404,'RESOURCE_NOT_FOUND','Category not found.');if(filters.type&&cat.type!==filters.type)fail(422,'VALIDATION_ERROR','This category does not match the selected type.');}
   return {userId,occurredOn:{$gte:filters.dateFrom,$lte:filters.dateTo},...(filters.type?{type:filters.type}:{}),...(filters.categoryId?{categoryId:oid(filters.categoryId)}:{})};
 }
 async function txPublic(row:DbRecord,session?:ClientSession){const category=await CategoryModel.findOne({_id:row.categoryId,userId:row.userId}).session(session||null).lean();if(!category)fail(500,'INTERNAL_ERROR','Category data is unavailable.');return txDTO(row,category);}
-export async function budgetEvaluation(userId:unknown,month:string,session?:ClientSession){
+export async function budgetEvaluation(userId:mongoose.Types.ObjectId,month:string,session?:ClientSession){
   const {dateFrom,dateTo}=monthRange(month);
   const budget=await BudgetModel.findOne({userId,month}).session(session||null).lean();
   const agg=TxModel.aggregate([{$match:{userId,type:'expense',occurredOn:{$gte:dateFrom,$lte:dateTo}}},{$group:{_id:null,spent:{$sum:'$amountMinor'}}}]);if(session)agg.session(session);
@@ -36,8 +36,8 @@ async function financial(req:Request,res:Response,body:unknown,fn:(session:Clien
   });
   if(result.status===204)res.sendStatus(204);else res.status(result.status).json({data:result.data,meta:{requestId:res.locals.requestId}});
 }
-async function validateCategory(userId:unknown,categoryId:string,type:string,session:ClientSession){const category=await CategoryModel.findOne({_id:oid(categoryId),userId,type}).session(session).lean();if(!category)fail(422,'VALIDATION_ERROR','Choose a category matching this transaction type.');return category;}
-async function missingOrConflict(userId:unknown,id:unknown,session:ClientSession){const exists=await TxModel.exists({_id:id,userId}).session(session);if(!exists)fail(404,'RESOURCE_NOT_FOUND','Transaction not found.');fail(409,'VERSION_CONFLICT','This record changed in another tab. Review the latest version.');}
+async function validateCategory(userId:mongoose.Types.ObjectId,categoryId:string,type:'income'|'expense',session:ClientSession){const category=await CategoryModel.findOne({_id:oid(categoryId),userId,type}).session(session).lean();if(!category)fail(422,'VALIDATION_ERROR','Choose a category matching this transaction type.');return category;}
+async function missingOrConflict(userId:mongoose.Types.ObjectId,id:unknown,session:ClientSession){const exists=await TxModel.exists({_id:id,userId}).session(session);if(!exists)fail(404,'RESOURCE_NOT_FOUND','Transaction not found.');fail(409,'VERSION_CONFLICT','This record changed in another tab. Review the latest version.');}
 ledgerRouter.get('/categories',async(req,res)=>{const {type}=z.object({type:z.enum(['income','expense']).optional()}).strict().parse(req.query);const rows=await CategoryModel.find({userId:req.auth!.user._id,...(type?{type}:{})}).sort({sortOrder:1}).lean();res.json({data:rows.map(categoryDTO)});});
 ledgerRouter.get('/transactions',async(req,res)=>{
   const {page:pageRaw,pageSize,...filterQuery}=req.query;const page=z.coerce.number().int().min(1).max(100000).default(1).parse(pageRaw);if(pageSize!==undefined&&pageSize!=='25')fail(400,'BAD_REQUEST','Page size must be 25.');

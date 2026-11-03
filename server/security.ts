@@ -24,8 +24,8 @@ export async function authenticate(req:Request,_res:Response,next:NextFunction){
   const token=req.cookies[sessionCookie];if(!token) return next(new ErrorWithCode(401,'UNAUTHENTICATED','Sign in to continue.'));
   try {
     const {payload}=await jwtVerify(token,key,{algorithms:['HS256'],issuer:'bachat',audience:'bachat-web'});
-    const session=await SessionModel.findOne({_id:payload.sid,userId:payload.sub,revokedAt:null,expiresAt:{$gt:new Date()},lastSeenAt:{$gt:new Date(Date.now()-86400000)}}).lean();
-    const user=session?await UserModel.findOne({_id:payload.sub,emailVerifiedAt:{$ne:null},authVersion:payload.av}).lean():null;
+    const session=await SessionModel.findOne({_id:String(payload.sid),userId:payload.sub,revokedAt:null,expiresAt:{$gt:new Date()},lastSeenAt:{$gt:new Date(Date.now()-86400000)}}).lean();
+    const user=session?await UserModel.findOne({_id:String(payload.sub),emailVerifiedAt:{$ne:null},authVersion:Number(payload.av)}).lean():null;
     if(!session||!user||session.authVersion!==user.authVersion) return next(new ErrorWithCode(401,'SESSION_EXPIRED','Your session ended. Sign in again.'));
     req.auth={user,session};
     if(Date.now()-new Date(session.lastSeenAt).getTime()>300000) await SessionModel.updateOne({_id:session._id,revokedAt:null},{$set:{lastSeenAt:new Date()}});

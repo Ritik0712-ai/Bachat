@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {randomBytes,createHash} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {Resend} from 'resend';
@@ -6,7 +7,7 @@ import {TokenModel} from './db.js';
 import {config} from './config.js';
 export const hashToken=(token:string)=>createHash('sha256').update(token).digest('hex');
 export const capturedMail:{to:string;kind:string;url:string}[]=[];
-export async function makeToken(userId:unknown,kind:'verify_email'|'reset_password',session:ClientSession){
+export async function makeToken(userId:mongoose.Types.ObjectId,kind:'verify_email'|'reset_password',session:ClientSession){
   await TokenModel.updateMany({userId,kind,consumedAt:null},{$set:{consumedAt:new Date()}},{session});
   const token=randomBytes(32).toString('hex');
   await TokenModel.create([{userId,kind,tokenHash:hashToken(token),createdAt:new Date(),expiresAt:new Date(Date.now()+(kind==='verify_email'?86400000:1800000))}],{session});return token;

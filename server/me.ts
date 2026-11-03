@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {Router} from 'express';
 import {z} from 'zod';
 import argon2 from 'argon2';
@@ -9,7 +10,7 @@ import {clearSession,rateLimit} from './security.js';
 import {userDTO} from './serializers.js';
 import {passwordHash} from './auth.js';
 export const meRouter=Router();
-export async function purgeUser(userId:unknown,session:ClientSession,reason:'user_request'|'unverified_expiry'='user_request'){
+export async function purgeUser(userId:mongoose.Types.ObjectId,session:ClientSession,reason:'user_request'|'unverified_expiry'='user_request'){
   const user=await UserModel.findOneAndUpdate({_id:userId,...(reason==='unverified_expiry'?{emailVerifiedAt:null,createdAt:{$lt:new Date(Date.now()-604800000)}}:{})},{$inc:{ledgerRevision:1n}},{session,new:true});
   if(!user)return false;
   await TombModel.create([{deletedUserId:userId,deletedAt:new Date(),expiresAt:new Date(Date.now()+2592000000),reason}],{session});
