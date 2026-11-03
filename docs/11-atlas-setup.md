@@ -22,7 +22,7 @@ Status verified on 3 November 2026. Provisioned infrastructure and verified appl
 
 Open the [Bachat Atlas project](https://cloud.mongodb.com/v2/6ae9c95ec8814c38d937b6d2#/overview). The earlier organization AI-client access restriction is resolved. The cluster was created without sample datasets or paid infrastructure.
 
-The specific database-user and development-IP setup was approved by the owner. The connector nevertheless returned “User did not confirm” and performed neither operation. The approved IP addition subsequently succeeded through the authenticated Atlas dashboard and was independently verified through the connector. Database-user creation still returns that connector error. Browser continuation was blocked when the Mac became locked.
+The specific database-user and development-IP setup was approved by the owner. The connector nevertheless returned “User did not confirm” and performed neither operation. The approved IP addition subsequently succeeded through the authenticated Atlas dashboard and was independently verified through the connector. Database-user creation still returns that connector error. After the owner unlocked the Mac, the browser form was prepared with username `bachat_app`, all four scoped roles below, and access limited to the `bachat` cluster. The password is blank and the form has not been submitted; credential entry and submission are handed to the owner under browser security rules.
 
 ## Finish database credentials
 
