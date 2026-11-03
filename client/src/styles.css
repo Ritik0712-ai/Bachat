@@ -415,6 +415,10 @@ h1:focus {
   font-weight: 600;
 }
 .account-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
@@ -474,6 +478,7 @@ h1:focus {
   margin-bottom: 27px;
 }
 .page-heading p {
+  overflow-wrap: anywhere;
   font-size: 12px;
   margin-top: 7px;
   color: #64748b;
@@ -1577,6 +1582,7 @@ h1:focus {
   margin-bottom: 21px;
 }
 .danger-notice h2 {
+  overflow-wrap: anywhere;
   font-size: 14px;
 }
 .danger-notice p {
