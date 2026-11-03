@@ -231,6 +231,9 @@ export default function Budgets({ mode = 'view' }: { mode?: 'view' | 'edit' | 'r
           <span className="sr-only">Budget month</span>
           <input
             type="month"
+            onInput={(e) => {
+              if (validMonth(e.currentTarget.value)) setSearch({ month: e.currentTarget.value });
+            }}
             min="2000-01"
             max={max}
             value={month}

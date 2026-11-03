@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { SlidersHorizontal, X, CalendarDays, RotateCcw } from 'lucide-react';
@@ -61,8 +61,15 @@ export function FilterBar({
       value.dateFrom === current.dateFrom && value.dateTo === current.dateTo ? 'current' : 'custom',
     );
   }, [JSON.stringify(value)]);
-  function submit() {
-    const result = filtersSchema.safeParse(draft);
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const visible = new FormData(event.currentTarget);
+    const result = filtersSchema.safeParse({
+      dateFrom: String(visible.get('dateFrom') || ''),
+      dateTo: String(visible.get('dateTo') || ''),
+      type: String(visible.get('type') || '') || undefined,
+      categoryId: String(visible.get('categoryId') || '') || undefined,
+    });
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
@@ -71,7 +78,7 @@ export function FilterBar({
     setOpen(false);
   }
   const fields = (
-    <>
+    <form onSubmit={submit}>
       <div className="filter-fields">
         <Field label="Period">
           <select
@@ -98,9 +105,14 @@ export function FilterBar({
         <Field label="From">
           <input
             aria-label="From date"
+            name="dateFrom"
             type="date"
             min="2000-01-01"
             value={draft.dateFrom}
+            onInput={(e) => {
+              setPreset('custom');
+              setDraft({ ...draft, dateFrom: e.currentTarget.value });
+            }}
             onChange={(e) => {
               setPreset('custom');
               setDraft({ ...draft, dateFrom: e.target.value });
@@ -110,8 +122,13 @@ export function FilterBar({
         <Field label="To">
           <input
             aria-label="To date"
+            name="dateTo"
             type="date"
             value={draft.dateTo}
+            onInput={(e) => {
+              setPreset('custom');
+              setDraft({ ...draft, dateTo: e.currentTarget.value });
+            }}
             onChange={(e) => {
               setPreset('custom');
               setDraft({ ...draft, dateTo: e.target.value });
@@ -121,6 +138,7 @@ export function FilterBar({
         <Field label="Type">
           <select
             aria-label="Transaction type filter"
+            name="type"
             value={draft.type || ''}
             onChange={(e) =>
               setDraft({
@@ -138,6 +156,7 @@ export function FilterBar({
         <Field label="Category">
           <select
             aria-label="Category filter"
+            name="categoryId"
             value={draft.categoryId || ''}
             onChange={(e) => setDraft({ ...draft, categoryId: e.target.value || undefined })}
           >
@@ -151,11 +170,12 @@ export function FilterBar({
               ))}
           </select>
         </Field>
-        <button className="button primary small filter-apply" onClick={submit}>
+        <button className="button primary small filter-apply" type="submit">
           Apply
         </button>
         <button
           className="icon-button filter-reset"
+          type="button"
           aria-label="Reset filters"
           title="Reset filters"
           onClick={() => {
@@ -167,7 +187,7 @@ export function FilterBar({
         </button>
       </div>
       <InlineError error={error} />
-    </>
+    </form>
   );
   return (
     <>

@@ -310,7 +310,14 @@ export function TransactionForm() {
     }
     setBusy(true);
     try {
-      const body: TransactionInput = { type, amountMinor, categoryId, occurredOn, note };
+      const visibleDate = String(new FormData(e.currentTarget).get('occurredOn') || occurredOn);
+      const body: TransactionInput = {
+        type,
+        amountMinor,
+        categoryId,
+        occurredOn: visibleDate,
+        note,
+      };
       const saved = await api<Transaction>('/transactions' + (editing ? '/' + id : ''), {
         method: editing ? 'PATCH' : 'POST',
         body: editing ? { ...body, version } : body,
@@ -512,6 +519,7 @@ export function TransactionForm() {
               <Field label="Date (required)" error={fields.occurredOn}>
                 <input
                   aria-label="Transaction date"
+                  name="occurredOn"
                   type="date"
                   min="2000-01-01"
                   max={today()}
